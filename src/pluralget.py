@@ -5,25 +5,23 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from time import sleep
+import logging
 import json
 import requests
 import sys
 import re
+import undetected_chromedriver as uc
 
 class Pluralget:
-
   def __init__(self, userName, password, course, language):
-    chrome_options = Options()
-    chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
-    driver = webdriver.Chrome(
-        executable_path="./drivers/linux/chromedriver", options=chrome_options)
-
-    #driver.get('https://app.pluralsight.com/id')
-    #self.login(driver, userName, password)
+    options = webdriver.ChromeOptions()
+    options.headless = False
+    driver = uc.Chrome(options=options)
+    driver.get('https://app.pluralsight.com/id')
+    self.login(driver, userName, password)
     driver.get(course)
     urlList, videoName = self.getAllVideos(driver)
     print(len(urlList), len(videoName))
-
     captions = self.getCaptions(driver, language)
     driver.quit()
     #Downloads video
@@ -81,24 +79,22 @@ class Pluralget:
     elementsXpath = driver.find_elements_by_xpath(items)
     index = 1
     for element in elementsXpath:
-        element.click()
-        print(driver.requests)
-        videoTitle = re.sub('\W+',' ', element.text)
-        # Gets all request of the site
-        for request in driver.requests:
-            print(request.url)
-            if request.response:
-                # Gets the request that contains the video link
-                if request.url.find("viewclip") != -1:
-                    jsonViewclipFile = json.loads(request.response.body)
-                    print(jsonViewclipFile)
-                    urlVideo = jsonViewclipFile["urls"][0]["url"]
-                    if urlList.count(urlVideo) == 0:
-                        print(str(index) + ". " + videoTitle)
-                        urlList.append(urlVideo)
-                        videoName.append(str(index) + ". " + videoTitle)
-                        index = index + 1
-        sleep(5)
+      element.click()
+      videoTitle = re.sub('\W+',' ', element.text)
+      # Gets all request of the site
+      for request in driver.requests:
+        if request.response:
+          # Gets the request that contains the video link
+          if request.url.find("viewclip") != -1:
+            jsonViewclipFile = json.loads(request.response.body)
+            print(jsonViewclipFile)
+            urlVideo = jsonViewclipFile["urls"][0]["url"]
+            if urlList.count(urlVideo) == 0:
+              print(str(index) + ". " + videoTitle)
+              urlList.append(urlVideo)
+              videoName.append(str(index) + ". " + videoTitle)
+              index = index + 1
+      sleep(5)
     return urlList, videoName
 
   # Gets captions of differents languages
@@ -116,7 +112,6 @@ class Pluralget:
         captionVersion = caption["version"]
         captions.append(url + captionId + "/" + captionVersion + "/" + language)
     return captions
-
 
 course = "https://app.pluralsight.com/course-player?clipId=bd84852c-2e10-46d9-8338-8a13428af0cf"
 language = "es"

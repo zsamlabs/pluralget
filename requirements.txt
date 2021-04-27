@@ -1,3 +1,4 @@
 selenium==3.141.0
-requests==2.25.1
 selenium-wire==4.2.4
+requests==2.25.1
+undetected_chromedriver==2.2.1

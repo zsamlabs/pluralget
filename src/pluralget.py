@@ -35,7 +35,8 @@ class Pluralget:
   
     passwordElement = driver.find_element_by_id('Password')
     self.sendText(passwordElement, password)
-  
+    sleep(3)
+
   def sendText(self, element, value):
     element.send_keys(value + Keys.ENTER)
   
@@ -87,7 +88,7 @@ class Pluralget:
           # Gets the request that contains the video link
           if request.url.find("viewclip") != -1:
             jsonViewclipFile = json.loads(request.response.body)
-            print(jsonViewclipFile)
+            #print(jsonViewclipFile)
             urlVideo = jsonViewclipFile["urls"][0]["url"]
             if urlList.count(urlVideo) == 0:
               print(str(index) + ". " + videoTitle)
